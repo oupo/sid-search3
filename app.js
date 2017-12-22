@@ -43,7 +43,6 @@ function search(tid, daily_seed, range, num_worker) {
 	fetch("search.wasm")
 		.then((response) => response.arrayBuffer())
 		.then((bytes) => {
-			$("#status").text("num_worker=" + num_worker);
 			let $t = $("<table>");
 			$t.append($("<tr><th>pos<th>seed<th>SID</tr>"));
 			$("#result").empty().append($t);
