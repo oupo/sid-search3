@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>sid-search3</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
+    <script src="seed.js"></script>
+    <script src="app.js"></script>
+  </head>
+  <body>
+  <h1>sid-search3</h1>
+  <form action="" name="f" onsubmit="on_submit();return false;">
+  <table>
+  <tbody>
+  <tr><th>表ID: <td>
+  <input type="text" size="10" name="tid" value="00000" required pattern="\d+">
+  <tr><th>くじ: <td>
+  <input type="text" size="30" name="lottery" value="00000 00000" required pattern="(\d+ )+\d+">
+  <tr><th>範囲: <td>
+  <input type="text" size="10" name="range" value="20000" required pattern="\d+">
+  <tr><td><td><input type="submit" value="検索">
+  </tbody>
+  </table>
+  </form>
+  <p id="progress"></p>
+  <div id="result"></div>
+  </body>
+  </html>
+</html>
