@@ -4,13 +4,21 @@ class InputError {
 	}
 }
 
+window.addEventListener("load", () => {
+	let form = document.forms.f;
+	if (navigator.hardwareConcurrency != undefined) {
+		form.elements.num_worker.value = String(navigator.hardwareConcurrency);
+	}
+});
+
 function on_submit() {
 	try {
 		let form = document.forms.f;
 		let tid = Number(form.elements.tid.value);
 		let daily_seed = read_lottery_input(form.elements.lottery);
 		let range = Number(form.elements.range.value);
-		search(tid, daily_seed, range);
+		let num_worker = Number(form.elements.num_worker.value);
+		search(tid, daily_seed, range, num_worker);
 	} catch (e) {
 		if (e instanceof InputError) {
 			alert(e.message);
@@ -20,7 +28,7 @@ function on_submit() {
 	}
 }
 
-function search(tid, daily_seed, range) {
+function search(tid, daily_seed, range, num_worker) {
 	let res = [];
 	let importObject = {
 		env: {
@@ -30,7 +38,6 @@ function search(tid, daily_seed, range) {
 		}
 	};
 	const MAX = 256 * 24 * 65536;
-	const num_worker = navigator.hardwareConcurrency || 1;
 	let progress = Array(num_worker).fill(0);
 	let found_count = 0;
 	fetch("search.wasm")
