@@ -29,14 +29,6 @@ function on_submit() {
 }
 
 function search(tid, daily_seed, range, num_worker) {
-	let res = [];
-	let importObject = {
-		env: {
-			found: function (seed, sid, step) {
-				res.push([seed, sid, step]);
-			}
-		}
-	};
 	const MAX = 256 * 24 * 65536;
 	let progress = Array(num_worker).fill(0);
 	let found_count = 0;
