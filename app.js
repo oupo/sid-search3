@@ -11,7 +11,7 @@ function on_submit() {
 		let daily_seed = read_lottery_input(form.elements.lottery);
 		let range = Number(form.elements.range.value);
 		search(tid, daily_seed, range);
-	} catch(e) {
+	} catch (e) {
 		if (e instanceof InputError) {
 			alert(e.message);
 		} else {
@@ -22,40 +22,54 @@ function on_submit() {
 
 function search(tid, daily_seed, range) {
 	let res = [];
-    let importObject = {
-        env: {
-            found: function(seed, sid, step) {
+	let importObject = {
+		env: {
+			found: function (seed, sid, step) {
 				res.push([seed, sid, step]);
-            }
-        }
-	};
-	console.log([tid, daily_seed, range]);
-	const MAX = 256 * 24 * 65536;
-    fetch('search.wasm')
-        .then((response) => response.arrayBuffer())
-        .then((bytes) => WebAssembly.instantiate(bytes, importObject))
-        .then((results) => {
-			function loop(start) {
-				let end = Math.min(MAX, start + 0x10000);
-				res = [];
-				results.instance.exports.search(tid, daily_seed, range, start, end);
-				for (let r of res) {
-					let [seed, sid, step] = r;
-					$t.append($("<tr>").append($("<td>").text(step + " days ago"))
-								.append($("<td>").text(hex(seed)))
-								.append($("<td>").text(sid)));
-				}
-				$("#progress").text((end / MAX * 100).toFixed(1) + "%");
-				if (end != MAX) {
-					setTimeout(() => loop(end), 0);
-				}
 			}
+		}
+	};
+	const MAX = 256 * 24 * 65536;
+	const num_worker = navigator.hardwareConcurrency;
+	let progress = Array(num_worker).fill(0);
+	let found_count = 0;
+	fetch("search.wasm")
+		.then((response) => response.arrayBuffer())
+		.then((bytes) => {
+			$("#status").text("num_worker=" + num_worker);
 			let $t = $("<table>");
 			$t.append($("<tr><th>pos<th>seed<th>SID</tr>"));
 			$("#result").empty().append($t);
-			loop(0);
-        })
-        .catch((e) => { console.log(e) });
+			const N = MAX / num_worker;
+			for (let i = 0; i < num_worker; i++) {
+				let worker = new Worker("worker.js");
+				worker.addEventListener("message", (message) => {
+					if (message.data.type == "progress") {
+						progress[i] = message.data.progress;
+						let sum = progress.reduce((x, y) => x + y, 0);
+						$("#progress").text((sum / MAX * 100).toFixed(1) + "% " + found_count + " hits.");
+					} else if (message.data.type == "res") {
+						let res = message.data.res;
+						for (let r of res) {
+							let [seed, sid, step] = r;
+							$t.append($("<tr>").append($("<td>").text(step + " days ago"))
+								.append($("<td>").text(hex(seed >>> 0)))
+								.append($("<td>").text(sid)));
+							found_count++;
+						}
+					}
+				});
+				worker.postMessage({
+					bytes: bytes,
+					tid: tid,
+					daily_seed: daily_seed,
+					range: range,
+					start: N * i,
+					end: N * (i + 1)
+				});
+			}
+		})
+		.catch((e) => { console.log(e) });
 }
 
 function to_hex(x, n) {
