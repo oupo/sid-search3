@@ -1,5 +1,5 @@
 extern {
-    fn found(seed: u32, sid: u32, step: u32);
+	fn found(seed: u32, sid: u32, step: u32);
 }
 
 fn next_mt_elem(a: u32, i: u32) -> u32 {
@@ -27,7 +27,7 @@ fn get_mt_result(seed: u32) -> (u32, u32) {
 	}
 	let mt397 = mt;
 	let mt398 = next_mt_elem(mt, 398);
-    return (genrand(mt0, mt1, mt397), genrand(mt1, mt2, mt398));
+	return (genrand(mt0, mt1, mt397), genrand(mt1, mt2, mt398));
 }
 
 fn calc_index(a: u32, b: u32, s: u32, k: u32) -> u32 {
@@ -41,7 +41,7 @@ fn calc_index(a: u32, b: u32, s: u32, k: u32) -> u32 {
 }
 
 fn daily_seed_to_index(seed: u32) -> u32 {
-    return calc_index(0x6c078965, 1, seed, 32);
+	return calc_index(0x6c078965, 1, seed, 32);
 }
 
 fn to_seed(i: u32) -> u32 {
@@ -53,13 +53,13 @@ fn to_seed(i: u32) -> u32 {
 
 #[no_mangle]
 pub unsafe fn search(tid: u32, daily_seed: u32, step_max: u32, pos_start: u32, pos_end: u32) {
-    let index = daily_seed_to_index(daily_seed);
-    for pos in pos_start..pos_end {
-        let seed = to_seed(pos);
-        let (dseed, trainer_id) = get_mt_result(seed);
-        let idx = daily_seed_to_index(dseed);
-        if (trainer_id & 0xffff) == tid && index - idx <= step_max {
-           found(seed, trainer_id >> 16, index - idx);
-        }
-    }
+	let index = daily_seed_to_index(daily_seed);
+	for pos in pos_start..pos_end {
+		let seed = to_seed(pos);
+		let (dseed, trainer_id) = get_mt_result(seed);
+		let idx = daily_seed_to_index(dseed);
+		if (trainer_id & 0xffff) == tid && index - idx <= step_max {
+		   found(seed, trainer_id >> 16, index - idx);
+		}
+	}
 }
