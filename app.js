@@ -30,7 +30,7 @@ function search(tid, daily_seed, range) {
 		}
 	};
 	const MAX = 256 * 24 * 65536;
-	const num_worker = navigator.hardwareConcurrency;
+	const num_worker = navigator.hardwareConcurrency || 1;
 	let progress = Array(num_worker).fill(0);
 	let found_count = 0;
 	fetch("search.wasm")
